@@ -2,7 +2,6 @@
 #include <bitset>
 #include <vector>
 #include "constant.h"
-//#include "constants.h"
 #define ll unsigned long long int
 using namespace std;
 /******************************************************************************
@@ -18,6 +17,8 @@ Note:
 ll roundFunction(ll roundKey, ll data)
 {
 
+	//cerr<<"Input data: "<<bitset<64>(data)<<" "<<std::hex<<data<<endl;
+	//cerr<<"Round Key : "<<bitset<64>(roundKey)<<" "<<std::hex<<roundKey<<endl;
 	//expanding data to 48 bits
 	ll expData=0;
 	ll currBits;	
@@ -55,8 +56,10 @@ ll roundFunction(ll roundKey, ll data)
 		expData = expData | (one<<47);
 
 	expData = expData & 281474976710655;
+	//cerr<<"Expen data: "<<bitset<64>(expData)<<endl;
 	ll xorData = expData ^ roundKey;
 
+	//cerr<<"Xor   data: "<<bitset<64>(xorData)<<endl;
 	ll row, col;
 	ll rowMask, colMask;
 	rowMask = 33;
@@ -90,7 +93,7 @@ ll roundFunction(ll roundKey, ll data)
 	}		
 
 	encData = encData >> 32;
-	
+	//cerr<<"Expan data: "<<bitset<64>(encData)<<endl;	
 	ll perData = 0;
 	ll pos;
 	for(int i=0;i<32;i++)
@@ -99,6 +102,7 @@ ll roundFunction(ll roundKey, ll data)
 		if( encData & (one << (32 - pos)))
 			perData = perData | (one << (31 - i));
 	}	
+	//cerr<<"permu data: "<<bitset<64>(perData)<<" "<<std::hex<<perData<<endl;	
 	return perData;
 }
 
@@ -154,8 +158,10 @@ ll roundKeyGen(ll &key, int &round)
 	ll right = (key & mask);
 
 	int count = 2;
+	
 	if(round==1 || round==2 || round==9 || round==16 )
 		count = 1;
+	round++;
 	
 	while(count--)
 	{
@@ -164,7 +170,6 @@ ll roundKeyGen(ll &key, int &round)
 	}
 
 	key = (left<<28) | right;
-	round++;
 	ll roundKey = 0;
 	ll one = 1;
 	int pos;
@@ -204,18 +209,20 @@ ll enc_DES(ll key, ll data)
 	ll right = (data & mask);
 	ll temp;
 	ll roundKey;
+	ll roundOut;
 	cout<<"Data after initial permutation: "<<std::hex<<data<<endl;
 	cout<<"L0: "<<std::hex<<left<<" R0: "<<std::hex<<right<<endl;
 	while(round<17)
 	{
-		cout<<round<<": ";
+		cout<<std::dec<<round<<": ";
 		roundKey = roundKeyGen(key,round);
-		temp = right;
-		right = left ^ roundFunction(roundKey,right);
-		left = temp;
+		temp = left;
+		left = right;
+		roundOut = roundFunction(roundKey, right);
+		right = (temp ^ roundOut);
 		cout<<std::hex<<left<<" "<<std::hex<<right<<" "<<std::hex<<roundKey<<endl;
 	}
-	data= (left<<32) | right;
+	data= (right<<32) | left;
 	return permut(data,true);
 }
 int main()
@@ -226,7 +233,7 @@ int main()
 
 	cin>>data>>key;
 	enc = enc_DES(key,data);
-	cout<<enc<<endl;
+	cout<<std::hex<<enc<<endl;
 
 //	ll roundKey, right;
 //	cin>>roundKey>>right;
