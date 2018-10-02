@@ -1,5 +1,4 @@
 #include <iostream>
-#include <bitset>
 #include <vector>
 #include <iomanip>
 #include "constant.h"
