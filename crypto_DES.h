@@ -49,7 +49,12 @@ class crypto_DES
 
 
 	crypto_DES();
-	
+
+	std::string decrypt(std::string,
+			    STRING_TYPE,
+			    std::string,
+			    STRING_TYPE,
+			    ENCRYPTION_MODE);	
 	std::string encrypt(std::string, 	 std::string , 
 			    STRING_TYPE, STRING_TYPE,
 			    ENCRYPTION_MODE, std::string iv="", 
