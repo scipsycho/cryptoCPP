@@ -11,6 +11,37 @@ crypto_DES::crypto_DES()
 
 }
 
+// it is assumed that the string is of correct size
+ll crypto_DES::__convert2Dec__(std::string str, STRING_TYPE str_type)
+{
+	ll dec = 0;
+	if(str_type == HEX_0 )
+	{
+		if( str.size() != 16 )
+		{
+			std::cerr<<"Wrong string size!! aborting!"<<std::endl;
+			exit(1);
+		}
+		std::stringstream ss;
+		ss << std::hex << str;
+		ss >> dec;
+	}
+	else if(str_type == ASCII_1 )
+	{
+		if( str.size() != 8 )
+		{
+			std::cerr<<"Wrong string size!! aborting!"<<std::endl;
+			exit(1);
+		}
+		for( int str_i = 0; str_i < 8; str_i++ )
+		{
+			dec = dec << 8;
+			dec = dec | str[str_i];
+		}
+	}
+
+	return dec;
+}
 ll crypto_DES::__roundFunction__(ll roundKey, ll data)
 {
 
@@ -224,9 +255,7 @@ ll crypto_DES::__getNextBlock__()
 					 <<std::endl;
 				return 0;
 			} 
-			std::stringstream ss;
-			ss << std::hex << this->input.substr(0,16);
-			ss >> block;
+			block = __convert2Dec__(input.substr(0,16),HEX_0);
 			this->input = this->input.substr(16);
 			break;
 			}
@@ -238,11 +267,7 @@ ll crypto_DES::__getNextBlock__()
 					 <<std::endl;
 				return 0;
 			} 
-			for( int input_i = 0; input_i < 8; input_i++ )
-			{
-				block = block<<8;
-				block = block | this->input[input_i];
-			}
+			block = __convert2Dec__(input.substr(0,8),ASCII_1);
 			this->input = this->input.substr(8);
 			break;
 			}
@@ -263,7 +288,9 @@ void crypto_DES::__pad_message__()
 }
 std::string crypto_DES::encrypt(std::string mess, std::string key, 
 				STRING_TYPE mess_type, STRING_TYPE key_type,
-				ENCRYPTION_MODE enc_mod)
+				ENCRYPTION_MODE enc_mod,
+				std::string iv,
+				STRING_TYPE iv_type)
 	{
 		
 		if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
@@ -285,6 +312,13 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 				<<std::endl;
 			return std::string();
 		}
+		if ( iv_type == STRING_TYPE_MAX && enc_mod == CBC_1 )
+		{
+			std::cerr<<"Intialization vector not provided!! aborting!"
+				 <<std::endl;
+			return std::string();
+		}
+		
 		switch(key_type)
 		{
 			case HEX_0:
@@ -296,10 +330,7 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 
 					return std::string();
 				}
-				std::stringstream ss;
-				ss << std::hex << key;	
-				ss >> this->secretKey;
-
+				this->secretKey = __convert2Dec__(key,HEX_0);
 				break;
 				}
 		        case ASCII_1:
@@ -312,11 +343,7 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 					return std::string();
 				}		
 
-				this->secretKey = 0;
-				for( int key_i = 0; key_i < 8; key_i++ ){
-					secretKey = secretKey << 8;
-					secretKey = secretKey | key[key_i];
-				}
+				this->secretKey = __convert2Dec__(key,ASCII_1);;
 				break;
 				}
 			default:
@@ -347,6 +374,28 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 				}
 				break;
 				}
+			case CBC_1:
+				{
+				
+				mess_block = __convert2Dec__(iv,iv_type);
+				enc_block = mess_block;
+				ss.str("");
+				ss << std::hex << enc_block;
+				this->output += ss.str();
+				while(1)
+				{
+					mess_block = __getNextBlock__() ^ enc_block;
+					enc_block = __enc_block__(this->secretKey, mess_block);
+
+					ss.str("");
+					ss << std::hex << enc_block;
+					this->output += ss.str();
+					if( this->input.size() < 16 )
+						break;
+				}
+				break;
+				}
+				
 			default:
 				return std::string();	
 		}
