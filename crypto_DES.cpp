@@ -3,6 +3,7 @@
 #include <iomanip>
 #include "constant.h"
 #include "crypto_DES.h"
+#include <bitset>
 #define ll unsigned long long int
 
 
@@ -19,7 +20,7 @@ ll crypto_DES::__convert2Dec__(std::string str, STRING_TYPE str_type)
 	{
 		if( str.size() != 16 )
 		{
-			std::cerr<<"Wrong string size!! aborting!"<<std::endl;
+			
 			exit(1);
 		}
 		std::stringstream ss;
@@ -30,7 +31,7 @@ ll crypto_DES::__convert2Dec__(std::string str, STRING_TYPE str_type)
 	{
 		if( str.size() != 8 )
 		{
-			std::cerr<<"Wrong string size!! aborting!"<<std::endl;
+			
 			exit(1);
 		}
 		for( int str_i = 0; str_i < 8; str_i++ )
@@ -155,7 +156,7 @@ ll crypto_DES::__permut__(ll data, bool inverse=false)
 	return newData;
 }
 
-ll crypto_DES::__cirShift__(ll data)
+ll crypto_DES::__cirLeftShift__(ll data)
 {
 	ll mask = 1;
 	mask = mask<<27;
@@ -171,8 +172,23 @@ ll crypto_DES::__cirShift__(ll data)
 	return data;
 }
 
+ll crypto_DES::__cirRightShift__(ll data)
+{
+	ll mask = 1;
+	mask = mask << 27;
+	if( data & 1 )
+	{
+		data = data >> 1;
+		data = data | mask;
+	}
+	else
+		data = data >> 1;
 
-ll crypto_DES::__roundKeyGen__(ll &key, int &round)
+	data = data & (268435455);
+	return data;
+}
+
+ll crypto_DES::__roundKeyGen_next__(ll &key, int &round)
 {
 	ll mask = 268435455; // 2 ^ 28 - 1
 	ll left = (key & (mask<<28))>>28;
@@ -186,8 +202,8 @@ ll crypto_DES::__roundKeyGen__(ll &key, int &round)
 	
 	while(count--)
 	{
-		left = __cirShift__(left);
-		right = __cirShift__(right);
+		left = __cirLeftShift__(left);
+		right = __cirLeftShift__(right);
 	}
 
 	key = (left<<28) | right;
@@ -204,6 +220,44 @@ ll crypto_DES::__roundKeyGen__(ll &key, int &round)
 	return roundKey;
 }
 
+ll crypto_DES::__roundKeyGen_prev__(ll &key, int &round)
+{
+	ll mask = 268435455; // 2 ^ 28 - 1
+	ll left = ( key & (mask<<28) ) >> 28;
+	ll right = ( key & mask );
+
+	
+	
+	
+	
+	ll roundKey = 0;
+	ll one = 1;
+	int pos;
+	
+	for(int i = 0; i < 48; i++ )
+	{
+		pos = C_box[i];
+		if( key & (one << (56 - pos)) )
+			roundKey = roundKey | (one << (47 - i) );
+	}
+
+	int count = 2;
+
+	if( round==1 || round==2 || round==9 || round==16 )
+		count = 1;
+	
+	while(count--)
+	{
+		left = __cirRightShift__(left);
+		right = __cirRightShift__(right);
+	}
+
+	key = (left << 28) | right;
+	
+	round--;
+
+	return roundKey;
+}
 ll crypto_DES::__parity_drop__(ll key)
 {
 	ll redKey=0;
@@ -224,15 +278,14 @@ ll crypto_DES::__enc_block__(ll key, ll data)
 	key = __parity_drop__(key);
 	data = __permut__(data);
 	int round=1;
-	ll mask = 4294967295;
+	ll mask = 4294967295;  // 2^32 -1 
 	ll left = (data & (mask<<32))>>32;
 	ll right = (data & mask);
 	ll temp;
 	ll roundKey;
-	ll roundOut;
 	while(round<17)
 	{
-		roundKey = __roundKeyGen__(key,round);
+		roundKey = __roundKeyGen_next__(key,round);
 		temp = left;
 		left = right;
 		right = (temp ^ __roundFunction__(roundKey, right));
@@ -241,6 +294,30 @@ ll crypto_DES::__enc_block__(ll key, ll data)
 	return __permut__(data,true);
 }
 
+ll crypto_DES::__dec_block__(ll key, ll data)
+{
+	key = __parity_drop__(key);
+	data = __permut__(data);
+	int round = 16;
+
+	ll mask = 4294967295; // 2^32 - 1
+
+	ll left = ( data & (mask <<32))>>32;
+	ll right = (data & mask);
+	ll temp;
+	ll roundKey;
+
+	while(round>0)
+	{
+		roundKey = __roundKeyGen_prev__(key,round);
+		temp = left;
+		left = right;
+		right = (temp ^ __roundFunction__(roundKey, right));
+	}
+
+	data = (right<<32) | left;
+	return __permut__(data,true);
+}
 ll crypto_DES::__getNextBlock__()
 {
 	ll block;
@@ -300,6 +377,8 @@ void crypto_DES::__pad_message__()
 	std::string pad(pad_len, pad_char);
 	this->input += pad;
 }
+
+
 std::string crypto_DES::encrypt(std::string mess, std::string key, 
 				STRING_TYPE mess_type, STRING_TYPE key_type,
 				ENCRYPTION_MODE enc_mod,
@@ -309,7 +388,7 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 		
 		if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
 		{
-			std::cerr<<"Type out of range!! aborting!"<<std::endl;
+			
 			return std::string();
 		}
 

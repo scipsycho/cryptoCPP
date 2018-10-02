@@ -16,12 +16,18 @@ class crypto_DES
 	//initial and final permutation
 	ll __permut__(ll,bool);
 
-	//utitility function for circular shift
-	ll __cirShift__(ll);	
+	//utility function for circular left shift
+	ll __cirLeftShift__(ll);	
 
-	//function for generating key for any round
-	ll __roundKeyGen__(ll &,int &);
+	//utility function for circular right shift
+	ll __cirRightShift__(ll);
 
+	public: 
+	//function for generating key for next round
+	ll __roundKeyGen_next__(ll &,int &);
+
+	//function for generating key for previous round
+	ll __roundKeyGen_prev__(ll &, int &);
 
 	//utitility function for parity drop
 	ll __parity_drop__(ll);
@@ -29,6 +35,8 @@ class crypto_DES
         //function for encrypting one block of data
 	ll __enc_block__(ll,ll);
 
+	//function for decrypting one block of data
+	ll __dec_block__(ll,ll);
 
 	//get next message block 
 	ll __getNextBlock__();
@@ -38,7 +46,6 @@ class crypto_DES
 	
 	//utitlity function for converting string to decimal
 	ll __convert2Dec__(std::string, STRING_TYPE);
-	public:
 
 
 	crypto_DES();
