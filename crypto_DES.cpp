@@ -542,40 +542,40 @@ std::string crypto_DES::encrypt(std::string mess,
 				ENCRYPTION_MODE enc_mod,
 				std::string iv,
 				STRING_TYPE iv_type)
+{
+	this->output = "";
+		
+	if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
 	{
-		this->output = "";
-		
-		if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
-		{
 			
-			std::cerr<<"Types out of range!! aborting!"<<std::endl;
-			return std::string();
-		}
+		std::cerr<<"Types out of range!! aborting!"<<std::endl;
+		return std::string();
+	}
 
-		if( enc_mod >= ENCRYPTION_MODE_MAX )
-		{
-			std::cerr<<"Encryption mode out of range!! aborting!"
-				 <<std::endl;
-			return std::string();
-		}
+	else if( enc_mod >= ENCRYPTION_MODE_MAX )
+	{
+		std::cerr<<"Encryption mode out of range!! aborting!"
+			 <<std::endl;
+		return std::string();
+	}
 
-		if( mess_type == HEX_0 && mess.size()%2 )
-		{
-			std::cerr<<"Hex messages should be of even length!! aborting!"
-				<<std::endl;
-			return std::string();
-		}
-		if ( iv_type == STRING_TYPE_MAX && enc_mod == CBC_1 )
-		{
-			std::cerr<<"Intialization vector not provided!! aborting!"
-				 <<std::endl;
-			return std::string();
-		}
+	else if( mess_type == HEX_0 && mess.size()%2 )
+	{
+		std::cerr<<"Hex messages should be of even length!! aborting!"
+		   	 <<std::endl;
+		return std::string();
+	}
+	else if ( iv_type == STRING_TYPE_MAX && enc_mod == CBC_1 )
+	{
+		std::cerr<<"Intialization vector not provided!! aborting!"
+			 <<std::endl;
+		return std::string();
+	}
 		
-		switch(key_type)
-		{
-			case HEX_0:
-				{
+	switch(key_type)
+	{
+		case HEX_0:
+			{
 				if(key.size() != 16 )
 				{
 					std::cerr<<"Wrong key size!! aborting!"
@@ -585,9 +585,9 @@ std::string crypto_DES::encrypt(std::string mess,
 				}
 				this->secretKey = __convert2Dec__(key,HEX_0);
 				break;
-				}
+			}
 		        case ASCII_1:
-				{
+			{
 				if( key.size() != 8 )
 				{
 					std::cerr<<"Wrong key size!! aborting!"
@@ -598,21 +598,22 @@ std::string crypto_DES::encrypt(std::string mess,
 
 				this->secretKey = __convert2Dec__(key,ASCII_1);;
 				break;
-				}
+			}
 			default:
 				return 0;
-		}
-		this->input = mess;
-		this->m_type = mess_type;
+	}
+	
+	this->input = mess;
+	this->m_type = mess_type;
 
-		__pad_message__();
-		ll mess_block;
-		ll enc_block;	
-		std::stringstream ss;
-		switch(enc_mod)
-		{
-			case ECB_0: 
-				{	
+	__pad_message__();
+	ll mess_block;
+	ll enc_block;	
+	std::stringstream ss;
+	switch(enc_mod)
+	{
+		case ECB_0: 
+			{	
 				while(1)
 				{
 					mess_block = __getNextBlock__();
@@ -626,9 +627,9 @@ std::string crypto_DES::encrypt(std::string mess,
 						break;
 				}
 				break;
-				}
-			case CBC_1:
-				{
+			}
+		case CBC_1:
+			{
 				
 				enc_block =  __convert2Dec__(iv,iv_type);
 				ss.str("");
@@ -646,10 +647,10 @@ std::string crypto_DES::encrypt(std::string mess,
 						break;
 				}
 				break;
-				}
+			}
 				
-			default:
-				return std::string();	
+		default:
+			return std::string();	
 		}
 		return this->output;
 }			
