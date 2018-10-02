@@ -378,6 +378,162 @@ void crypto_DES::__pad_message__()
 	this->input += pad;
 }
 
+//Encrypted messsage type should always be HEX_0
+//Here mess type is which type of output is expected
+std::string crypto_DES::decrypt(std::string enc_mess,
+				STRING_TYPE mess_type, 
+				std::string key,
+				STRING_TYPE key_type,
+				ENCRYPTION_MODE dec_mode)
+{
+		this->output = "";
+
+	if( key_type >= STRING_TYPE_MAX || mess_type >= STRING_TYPE_MAX)
+	{
+		std::cerr<<"Types out of range!! aborting!"<<std::endl;
+		return std::string();
+	}
+
+	else if( dec_mode >= ENCRYPTION_MODE_MAX )
+	{
+		std::cerr<<"Decryption mode out of range!! aborting!"
+			 <<std::endl;
+		return std::string();
+	}
+
+	else if( enc_mess.size()%16 )
+	{
+		std::cerr<<"Encrypted message not a multiple of 64B !"
+			 <<std::endl;
+		return std::string();
+	}
+
+
+	
+	switch(key_type)
+	{
+		case HEX_0:
+			{
+				if(key.size() != 16 )
+				{
+					std::cerr<<"Wrong key size!! aborting!"
+						 <<std::endl;
+
+					return std::string();
+				}
+				this->secretKey = __convert2Dec__(key,HEX_0);
+				break;
+			}
+		case ASCII_1:
+			{
+				if( key.size() != 8 )
+				{
+					std::cerr<<"Wrong key size!! aborting!"
+						 <<std::endl;
+
+					return std::string();
+				}		
+
+				this->secretKey = __convert2Dec__(key,ASCII_1);;
+				break;
+			}
+		default:
+				return 0;
+	}
+
+
+	this->input = enc_mess;
+	this->m_type = HEX_0;
+
+	ll mess_block;
+	ll dec_block;
+	ll temp;
+	ll mask = 255;
+	mask = mask << 56;
+	char ch;
+	std::stringstream ss;
+	
+	switch(dec_mode)
+	{
+		case ECB_0:
+			{
+				while(1)
+				{
+					mess_block = __getNextBlock__();
+					dec_block = __dec_block__(this->secretKey, mess_block);
+					if( mess_type == HEX_0 )
+					{
+						ss.str("");
+						ss << std::setfill('0') 
+						   << std::setw(16)
+						   << std::hex
+						   << dec_block;
+						
+						this->output += ss.str();
+					}
+					else if ( mess_type == ASCII_1 )
+					{
+						temp = dec_block;
+						for( int out_i = 0; out_i < 8; out_i++ )
+						{
+							ch = 0;
+							ch = ( mask & temp ) >> 56;
+							this->output += ch;		
+							temp = temp << 8;	
+						}
+
+					}
+					if( this->input.size() == 0)
+						break;
+				}
+				break;
+			}
+		case CBC_1: 
+			{
+				
+				mess_block = __getNextBlock__();
+				while(1)
+				{
+					temp = mess_block;
+					mess_block = __getNextBlock__();
+					dec_block = __dec_block__(this->secretKey, mess_block) ^ temp;
+					
+						
+					if( mess_type == HEX_0 )
+					{
+						ss.str("");
+						ss << std::setfill('0') 
+						   << std::setw(16)
+						   << std::hex
+						   << dec_block;
+						
+						this->output += ss.str();
+					}
+					else if ( mess_type == ASCII_1 )
+					{
+						temp = dec_block;
+						for( int out_i = 0; out_i < 8; out_i++ )
+						{
+							ch = 0;
+							ch = ( mask & temp ) >> 56;
+							this->output += ch;		
+							temp = temp << 8;	
+						}
+
+					}
+					if( this->input.size() == 0)
+						break;
+				}
+					
+				break;
+			}
+		default:
+			return std::string();
+	}
+
+	return this->output;
+	
+}
 
 std::string crypto_DES::encrypt(std::string mess, std::string key, 
 				STRING_TYPE mess_type, STRING_TYPE key_type,
@@ -385,10 +541,12 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 				std::string iv,
 				STRING_TYPE iv_type)
 	{
+		this->output = "";
 		
 		if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
 		{
 			
+			std::cerr<<"Types out of range!! aborting!"<<std::endl;
 			return std::string();
 		}
 
