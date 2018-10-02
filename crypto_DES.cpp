@@ -1,6 +1,7 @@
 #include <iostream>
 #include <bitset>
 #include <vector>
+#include <iomanip>
 #include "constant.h"
 #include "crypto_DES.h"
 #define ll unsigned long long int
@@ -280,10 +281,24 @@ ll crypto_DES::__getNextBlock__()
 
 void crypto_DES::__pad_message__()
 {
-	if( this->input.size()%16 == 0 )
+	if( this->input.size()%16 == 0  && this->m_type == HEX_0 )
 		return ;
-	int pad_len = 16 - input.size()%16 ;
-	std::string pad(pad_len, '0');
+	else if( this->input.size()%8 == 0 && this->m_type == ASCII_1 )
+		return ;
+	
+	int pad_len;
+	char pad_char;
+	if( this->m_type == HEX_0 )
+	{
+		pad_len = 16 - input.size()%16 ;
+		pad_char = '0';
+	} 
+	else	
+	{	
+		pad_len = 8 - input.size()%8;
+		pad_char = '\0';
+	}
+	std::string pad(pad_len, pad_char);
 	this->input += pad;
 }
 std::string crypto_DES::encrypt(std::string mess, std::string key, 
@@ -367,9 +382,9 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 								mess_block);
 
 					ss.str("");
-					ss << std::hex << enc_block;
+					ss << std::setfill('0') << std::setw(16) << std::hex << enc_block;
 					this->output += ss.str();
-					if( this->input.size() < 16 )
+					if( this->input.size() == 0 )
 						break;
 				}
 				break;
@@ -377,10 +392,9 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 			case CBC_1:
 				{
 				
-				mess_block = __convert2Dec__(iv,iv_type);
-				enc_block = mess_block;
+				enc_block =  __convert2Dec__(iv,iv_type);
 				ss.str("");
-				ss << std::hex << enc_block;
+				ss << std::setfill('0') << std::setw(16) << std::hex << enc_block;
 				this->output += ss.str();
 				while(1)
 				{
@@ -388,9 +402,9 @@ std::string crypto_DES::encrypt(std::string mess, std::string key,
 					enc_block = __enc_block__(this->secretKey, mess_block);
 
 					ss.str("");
-					ss << std::hex << enc_block;
+					ss << std::setfill('0') << std::setw(16) << std::hex << enc_block;
 					this->output += ss.str();
-					if( this->input.size() < 16 )
+					if( this->input.size() == 0 )
 						break;
 				}
 				break;
