@@ -535,8 +535,10 @@ std::string crypto_DES::decrypt(std::string enc_mess,
 	
 }
 
-std::string crypto_DES::encrypt(std::string mess, std::string key, 
-				STRING_TYPE mess_type, STRING_TYPE key_type,
+std::string crypto_DES::encrypt(std::string mess,  
+				STRING_TYPE mess_type, 
+				std::string key,
+				STRING_TYPE key_type,
 				ENCRYPTION_MODE enc_mod,
 				std::string iv,
 				STRING_TYPE iv_type)
