@@ -22,7 +22,6 @@ class crypto_DES
 	//utility function for circular right shift
 	ll __cirRightShift__(ll);
 
-	public: 
 	//function for generating key for next round
 	ll __roundKeyGen_next__(ll &,int &);
 
@@ -48,6 +47,7 @@ class crypto_DES
 	ll __convert2Dec__(std::string, STRING_TYPE);
 
 
+	public: 
 	crypto_DES();
 
 	std::string decrypt(std::string,
