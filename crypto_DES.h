@@ -35,6 +35,9 @@ class crypto_DES
 
 	//pad the input message
 	void __pad_message__();	
+	
+	//utitlity function for converting string to decimal
+	ll __convert2Dec__(std::string, STRING_TYPE);
 	public:
 
 
@@ -42,5 +45,6 @@ class crypto_DES
 	
 	std::string encrypt(std::string, 	 std::string , 
 			    STRING_TYPE, STRING_TYPE,
-			    ENCRYPTION_MODE );
+			    ENCRYPTION_MODE, std::string iv="", 
+			    STRING_TYPE iv_type = STRING_TYPE_MAX);
 };
