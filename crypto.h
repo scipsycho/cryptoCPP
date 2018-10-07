@@ -67,6 +67,9 @@ class crypto_AES
 		//Mix Columns transformation on the state
 		void __mixColumns_transform__(std::vector<std::vector<BYTE> >&);
 
+		//Inverse Mix Columns transformation on the state
+		void __mixColumns_inv_transform__(std::vector<std::vector<BYTE> >&);
+		
 		//Generates keys for all rounds and returns them
 		std::vector<std::vector<BYTE> > __roundKeyGen__(std::vector<BYTE>&);
 

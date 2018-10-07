@@ -200,6 +200,22 @@ void crypto_AES::__mixColumns_transform__(std::vector< std::vector< BYTE > > &st
 		state[3][j] = state_col[3];
 	}
 }
+void crypto_AES::__mixColumns_inv_transform__(std::vector< std::vector< BYTE > > &state )
+{
+	std::vector< BYTE > state_col(4);
+	for(int j = 0; j < state[0].size(); j++ )
+	{
+		state_col[0] = (0x0e * state[0][j]) ^ ( 0x0b * state[1][j] ) ^ ( 0x0d * state[2][j] ) ^ ( 0x09 * state[3][j] );
+		state_col[1] = (0x09 * state[0][j]) ^ ( 0x0e * state[1][j] ) ^ ( 0x0b * state[2][j] ) ^ ( 0x0d * state[3][j] );
+		state_col[2] = (0x0d * state[0][j]) ^ ( 0x09 * state[1][j] ) ^ ( 0x0e * state[2][j] ) ^ ( 0x0b * state[3][j] );
+		state_col[3] = (0x0b * state[0][j]) ^ ( 0x0d * state[1][j] ) ^ ( 0x09 * state[2][j] ) ^ ( 0x0e * state[3][j] );
+		
+		state[0][j] = state_col[0];
+		state[1][j] = state_col[1];
+		state[2][j] = state_col[2];
+		state[3][j] = state_col[3];
+	}
+}
 void show_word(std::vector<BYTE> &word)
 {
 	int temp;
