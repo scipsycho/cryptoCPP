@@ -1,7 +1,97 @@
+#ifndef  _INCLUDE_CRYPTOCPP_HEADER_
+#define _INCLUDE_CRYPTOCPP_HEADER_
+
+
 #include <sstream>
+#include <vector>
 #define ll unsigned long long int
 enum STRING_TYPE { HEX_0 = 0, ASCII_1 , STRING_TYPE_MAX};
 enum ENCRYPTION_MODE { ECB_0 = 0, CBC_1 , ENCRYPTION_MODE_MAX};
+class BYTE
+{
+	public:
+		uint8_t byte;
+	
+		BYTE();
+		BYTE(int);
+		BYTE(unsigned int t);
+		BYTE(uint8_t);
+		BYTE operator^(const BYTE &);
+		friend BYTE operator*(const int ,const BYTE &);
+		friend BYTE operator*(const BYTE &,const int );
+		BYTE operator *(const BYTE &);
+		BYTE operator << (std::size_t);
+		BYTE operator << (int );
+		BYTE operator >> (int );
+		BYTE operator >> (std::size_t);
+		BYTE operator & (const BYTE &);
+		BYTE operator = (const BYTE &);
+		operator int();
+};
+
+class crypto_AES
+{
+	private:
+		std::string input;
+		STRING_TYPE m_type;
+		std::string output;
+		std::vector<std::vector<BYTE> > secretKey;
+
+	public:
+
+		crypto_AES();
+
+		//a utility functions that performs substituition on
+		//one word
+		void __subBytes_transform_word__(std::vector<BYTE>&);
+
+		//Sub-Bytes transformation on the state
+		void __subBytes_transform__(std::vector< std::vector<BYTE> >&);
+
+		//a utility function for XORing two words
+		std::vector<BYTE> __xor_word__(std::vector<BYTE>&,
+					       std::vector<BYTE>&);
+
+		//a utility function to shift a row 
+		void __shift_row_left__(std::vector<BYTE> &);	
+
+		//Shift Rows transormation on the state
+		void __shiftRows_transform__(std::vector<std::vector<BYTE> >&);
+
+		//Mix Columns transformation on the state
+		void __mixColumns_transform__(std::vector<std::vector<BYTE> >&);
+
+		//Generates keys for all rounds and returns them
+		std::vector<std::vector<BYTE> > __roundKeyGen__(std::vector<BYTE>&);
+
+
+		//Add Round Key transformation on the state	
+		void __addRoundKey_transform__(std::vector< std::vector<BYTE> >&,
+					     std::vector< std::vector<BYTE> >&,
+					     int);
+
+		//Encrypts 4Bytes of data with the key stored in words
+		std::vector<BYTE> __enc_block__(std::vector<BYTE>&,
+						std::vector<std::vector<BYTE> >&);
+
+
+		//utility function to convert a string to a vector of bytes
+		std::vector<BYTE> __BYTE_transform__(std::string,
+						     STRING_TYPE);
+
+		//function to get the next block of message
+		std::vector<BYTE> __getNextBlock__();
+	
+		//Encrypt function
+		std::string encrypt(std::string,
+				    STRING_TYPE,
+				    std::string,
+				    STRING_TYPE,
+				    ENCRYPTION_MODE,
+				    std::string,
+				    STRING_TYPE);	
+};	
+		
 class crypto_DES
 {
 	private:
@@ -63,3 +153,5 @@ class crypto_DES
 			    std::string iv="", 
 			    STRING_TYPE iv_type = STRING_TYPE_MAX);
 };
+
+#endif
