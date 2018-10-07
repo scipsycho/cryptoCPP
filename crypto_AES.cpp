@@ -152,7 +152,17 @@ void crypto_AES::__shift_row_left__(std::vector< BYTE > &row )
 
 	row[n-1] = temp;
 }
-void crypto_AES::__shiftRows_transform__(std::vector< std::vector< BYTE > > &state )
+void crypto_AES::__shift_row_right__(std::vector< BYTE > &row)
+{
+	BYTE temp;
+	int n = row.size();
+	temp = row[n-1];
+	for(int i=n-1; i>0; i--)
+		row[i] = row[i-1];
+
+	row[0] = temp;
+}
+void crypto_AES::__shiftRows_inv_transform__(std::vector< std::vector< BYTE > > &state )
 {
 	__shift_row_left__(state[1]);
 	__shift_row_left__(state[2]);
@@ -162,6 +172,15 @@ void crypto_AES::__shiftRows_transform__(std::vector< std::vector< BYTE > > &sta
 	__shift_row_left__(state[3]);
 }
 
+void crypto_AES::__shiftRows_transform__(std::vector< std::vector< BYTE > > &state)
+{
+	__shift_row_right__(state[1]);
+	__shift_row_right__(state[2]);
+	__shift_row_right__(state[2]);
+	__shift_row_right__(state[3]);
+	__shift_row_right__(state[3]);
+	__shift_row_right__(state[3]);
+}
 void crypto_AES::__mixColumns_transform__(std::vector< std::vector< BYTE > > &state )
 {
 	std::vector< BYTE > state_col(4);

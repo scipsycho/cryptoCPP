@@ -56,6 +56,11 @@ class crypto_AES
 		//a utility function to shift a row 
 		void __shift_row_left__(std::vector<BYTE> &);	
 
+		//a utility function to shift a row right
+		void __shift_row_right__(std::vector<BYTE> &);
+
+		//Inverse Shift Rows transformation on the state
+		void __shiftRows_inv_transform__(std::vector<std::vector<BYTE> > &);
 		//Shift Rows transormation on the state
 		void __shiftRows_transform__(std::vector<std::vector<BYTE> >&);
 
