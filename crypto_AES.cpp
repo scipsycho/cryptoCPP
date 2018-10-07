@@ -178,15 +178,14 @@ void crypto_AES::__mixColumns_transform__(std::vector< std::vector< BYTE > > &st
 		state[3][j] = state_col[3];
 	}
 }
-/*void show_word(std::vector<BYTE> &word)
+void show_word(std::vector<BYTE> &word)
 {
 	int temp;
 	for(int j=0; j<word.size();j++){
 		temp=word[j];
-		std::cout<<setfill('0')<<setw(2)<<std::hex<<temp;
+		std::cout<<std::setfill('0')<<std::setw(2)<<std::hex<<temp;
 	}
-	std::cout<<" ";
-}*/
+}
 std::vector< std::vector<BYTE> >  crypto_AES::__roundKeyGen__(std::vector<BYTE> &key)
 {
 	int i=0;
@@ -225,7 +224,6 @@ std::vector< std::vector<BYTE> >  crypto_AES::__roundKeyGen__(std::vector<BYTE> 
 		}
 		words_t[i] = __xor_word__(words_t[i-Nk],temp);
 		i++;
-		std::cout<<std::endl;
 	}
 
 	return words_t;
@@ -298,7 +296,7 @@ std::vector<BYTE> crypto_AES::__BYTE_transform__(std::string str,
 						 STRING_TYPE str_type)
 {
 	std::vector<BYTE> bytes;
-	int temp;
+	unsigned int temp;
 	switch(str_type)
 	{
 		case HEX_0:
@@ -310,10 +308,9 @@ std::vector<BYTE> crypto_AES::__BYTE_transform__(std::string str,
 					exit(1);
 				}
 				
-				std::stringstream ss;
-				for(int str_i = 0; str_i+1<str.size(); str_i++)
+				for(int str_i = 0; str_i<str.size(); str_i+=2)
 				{
-					ss.str("");
+					std::stringstream ss;
 					ss << std::hex << str.substr(str_i,2);
 					ss >> temp;
 					bytes.push_back(temp); 
@@ -434,7 +431,7 @@ std::string crypto_AES::encrypt(std::string mess,
 
 	this->secretKey = __roundKeyGen__(key_in_bytes);
 
-
+	
 	std::vector<BYTE> mess_block;
 	std::vector<BYTE> enc_block;
 	std::stringstream ss;
