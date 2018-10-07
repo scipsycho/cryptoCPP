@@ -94,6 +94,9 @@ class crypto_AES
 		//utility function to convert vector of bytes to hex string
 		std::string __hex_transform__(std::vector<BYTE> &);
 		
+		//utility function to convert vector of bytes to ascii string
+		std::string __ascii_transform__(std::vector<BYTE> &);
+		
 		//function used for padding
 		void __pad_message__(PAD_TYPE pad_type);
 
@@ -108,7 +111,14 @@ class crypto_AES
 				    ENCRYPTION_MODE,
 				    std::string,
 				    STRING_TYPE,
-				    PAD_TYPE);	
+				    PAD_TYPE);
+
+		//Decrypt Function
+		std::string decrypt(std::string,
+				    STRING_TYPE,
+				    std::string,
+				    STRING_TYPE,
+				    ENCRYPTION_MODE);	
 };	
 		
 class crypto_DES

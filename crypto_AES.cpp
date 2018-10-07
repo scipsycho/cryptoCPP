@@ -102,6 +102,7 @@ crypto_AES::crypto_AES()
 }
 void crypto_AES::__subBytes_transform_word__(std::vector< BYTE > &word, bool isInv)
 {
+	
 	int in = 0;
 	if(isInv)
 		in = 1;
@@ -165,7 +166,7 @@ void crypto_AES::__shift_row_right__(std::vector< BYTE > &row)
 
 	row[0] = temp;
 }
-void crypto_AES::__shiftRows_inv_transform__(std::vector< std::vector< BYTE > > &state )
+void crypto_AES::__shiftRows_transform__(std::vector< std::vector< BYTE > > &state )
 {
 	__shift_row_left__(state[1]);
 	__shift_row_left__(state[2]);
@@ -175,7 +176,7 @@ void crypto_AES::__shiftRows_inv_transform__(std::vector< std::vector< BYTE > > 
 	__shift_row_left__(state[3]);
 }
 
-void crypto_AES::__shiftRows_transform__(std::vector< std::vector< BYTE > > &state)
+void crypto_AES::__shiftRows_inv_transform__(std::vector< std::vector< BYTE > > &state)
 {
 	__shift_row_right__(state[1]);
 	__shift_row_right__(state[2]);
@@ -380,6 +381,18 @@ std::string crypto_AES::__hex_transform__(std::vector<BYTE> &bytes)
 	}
 	return ss.str();
 }
+std::string crypto_AES::__ascii_transform__(std::vector<BYTE> &bytes)
+{
+	std::string ascii="";
+	int temp;
+	for(int b_i = 0; b_i < bytes.size(); b_i++)
+	{
+		temp = bytes[b_i];
+		ascii += std::string(1,(char)temp);
+	}
+
+	return ascii;
+}
 std::vector<BYTE> crypto_AES::__BYTE_transform__(std::string str,
 						 STRING_TYPE str_type)
 {
@@ -583,13 +596,11 @@ std::string crypto_AES::encrypt(std::string mess,
 	this->m_type = mess_type;
 
 	__pad_message__(pad_type);
-	std::cout<<"padded message: "<<this->input.size()<<std::endl;
 	this->secretKey = __roundKeyGen__(key_in_bytes);
 
 	
 	std::vector<BYTE> mess_block;
 	std::vector<BYTE> enc_block;
-	int temp;
 	switch(enc_mod)
 	{
 		case ECB_0:
@@ -644,4 +655,119 @@ std::string crypto_AES::encrypt(std::string mess,
 	
 	
 	return this->output;
-} 
+}
+
+ 
+std::string crypto_AES::decrypt(std::string mess,
+				STRING_TYPE mess_type,
+				std::string key,
+				STRING_TYPE key_type,
+				ENCRYPTION_MODE enc_mod)
+{
+	this->output = "";
+
+	if( mess_type >= STRING_TYPE_MAX || key_type >= STRING_TYPE_MAX)
+	{
+			
+		std::cerr<<"Types out of range!! aborting!"<<std::endl;
+		return std::string();
+	}
+
+	else if( enc_mod >= ENCRYPTION_MODE_MAX )
+	{
+		std::cerr<<"Encryption mode out of range!! aborting!"
+			 <<std::endl;
+		return std::string();
+	}
+
+	else if( mess.size()%32!=0 )
+	{
+		std::cerr<<"Encrypted hex messages should be a multiple of 32 bits!! aborting!"
+		   	 <<std::endl;
+		return std::string();
+	}
+	else if ( mess.size() <=32  && enc_mod == CBC_1 )
+	{
+		std::cerr<<"Message size very small!! aborting!"
+			 <<std::endl;
+		return std::string();
+	}
+
+	std::vector<BYTE> key_in_bytes = __BYTE_transform__(key,key_type);
+	
+	switch(key_in_bytes.size())
+	{
+		case 16:
+		case 24:
+		case 32:
+			break;
+		default:
+			std::cerr<<"Key size not supported!! Aborting!!"
+				 <<std::endl;
+			exit(1);
+	}
+
+	this->input = mess;
+	this->m_type = HEX_0;
+
+	this->secretKey = __roundKeyGen__(key_in_bytes);
+
+	
+	std::vector<BYTE> mess_block;
+	std::vector<BYTE> dec_block;
+	std::vector<BYTE> temp;
+	switch(enc_mod)
+	{
+		case ECB_0:
+			{
+				while(1)
+				{
+					mess_block = __getNextBlock__();
+					dec_block = __dec_block__(mess_block,
+								  this->secretKey);
+					
+					if(mess_type == HEX_0)
+						this->output += __hex_transform__(dec_block);
+
+					else if(mess_type == ASCII_1 )
+						this->output += __ascii_transform__(dec_block);
+					if( this->input.size() == 0)
+						break;
+				}
+				break;
+			}
+
+	
+		case CBC_1:
+			{
+				mess_block = __getNextBlock__();
+
+				while(1)
+				{
+					temp = mess_block;
+					mess_block = __getNextBlock__();
+					dec_block = __dec_block__(mess_block,
+								  this->secretKey);
+			
+					dec_block = __xor_word__(dec_block,temp);
+					if(mess_type == HEX_0 )
+						this->output += __hex_transform__(dec_block);
+					else if(mess_type == ASCII_1 )
+						this->output += __ascii_transform__(dec_block);
+
+					if( this->input.size() == 0 )
+						break;
+				}	
+
+				break;
+			}	
+
+		default:
+			std::cerr<<"Wrong choice input"<<std::endl;
+			exit(1);
+	}
+
+	
+	
+	return this->output;
+}
