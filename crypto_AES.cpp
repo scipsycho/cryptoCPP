@@ -328,9 +328,10 @@ std::vector<BYTE> crypto_AES::__BYTE_transform__(std::string str,
 				}
 		
 			}
+			break;
 
 		default: 
-				std::cerr<<"String type not defined!!! Aborting!"
+				std::cerr<<"String "<<str<<" with type "<<str_type<<" not defined!!! Aborting!"
 					 <<std::endl;
 
 				exit(1);
@@ -374,13 +375,77 @@ std::vector<BYTE> crypto_AES::__getNextBlock__()
 
 	return bytes;
 }
+
+void crypto_AES::__pad_message__(PAD_TYPE pad_type)
+{
+	std::string pad_char;
+	int pad_num;
+	std::stringstream ss;
+	std::string pad;
+	switch(pad_type)
+	{
+		case NORM_0:
+			if(this->m_type == HEX_0)
+			{
+				if(this->input.size()%32 == 0)
+					return;
+
+				pad_num=32 - input.size()%32;
+				pad_char = std::string("0");
+			}
+			else if(this->m_type == ASCII_1)
+			{
+				if(this->input.size()%16 == 0)
+					return;
+
+				pad_num = 16 - input.size()%16;
+				pad_char = std::string(1,'\0');
+			}
+			
+			break;
+		case PKCS5:
+			if(this->m_type == HEX_0)
+			{
+				pad_num = 32 - input.size()%32;
+				if(pad_num%2 == 1 )
+				{
+					std::cerr<<"PKCS5 padding cannot be done! Hence reverting to normal padding"
+						 <<std::endl;
+					return __pad_message__(NORM_0);
+				}
+				pad_num /= 2;
+				ss << std::setfill('0')
+				   << std::setw(2)
+				   <<std::hex << pad_num;
+				pad_char = ss.str();	
+			}	
+			else if(this->m_type == ASCII_1)
+			{
+				pad_num = 16 - input.size()%16;
+				pad_char = std::string(1,(char)pad_num);
+			}
+
+			break;
+		default:
+			std::cerr<<"Pad type not defined!! Aborting!!"
+				 <<std::endl;
+			exit(1);
+			break;
+	}
+
+	while(pad_num--)
+	{
+		this->input += pad_char;
+	}
+}
 std::string crypto_AES::encrypt(std::string mess,
 				STRING_TYPE mess_type,
 				std::string key,
 				STRING_TYPE key_type,
 				ENCRYPTION_MODE enc_mod,
 				std::string iv,
-				STRING_TYPE iv_type)
+				STRING_TYPE iv_type,
+				PAD_TYPE pad_type)
 
 {
 	this->output = "";
@@ -429,6 +494,7 @@ std::string crypto_AES::encrypt(std::string mess,
 	this->input = mess;
 	this->m_type = mess_type;
 
+	__pad_message__(pad_type);
 	this->secretKey = __roundKeyGen__(key_in_bytes);
 
 	
@@ -462,6 +528,12 @@ std::string crypto_AES::encrypt(std::string mess,
 				break;
 			}
 
+	
+		case CBC_1:
+			{
+				
+				
+			}	
 
 		default:
 			std::cerr<<"Wrong choice input"<<std::endl;

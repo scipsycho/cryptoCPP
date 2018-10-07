@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #define ll unsigned long long int
+enum PAD_TYPE { NORM_0 =0, PKCS5=1 , PAD_TYPE_MAX };
 enum STRING_TYPE { HEX_0 = 0, ASCII_1 , STRING_TYPE_MAX};
 enum ENCRYPTION_MODE { ECB_0 = 0, CBC_1 , ENCRYPTION_MODE_MAX};
 class BYTE
@@ -31,13 +32,13 @@ class BYTE
 
 class crypto_AES
 {
-	private:
+	public:
 		std::string input;
 		STRING_TYPE m_type;
 		std::string output;
 		std::vector<std::vector<BYTE> > secretKey;
 
-	public:
+
 
 		crypto_AES();
 
@@ -79,6 +80,10 @@ class crypto_AES
 		std::vector<BYTE> __BYTE_transform__(std::string,
 						     STRING_TYPE);
 
+		
+		//function used for padding
+		void __pad_message__(PAD_TYPE pad_type);
+
 		//function to get the next block of message
 		std::vector<BYTE> __getNextBlock__();
 	
@@ -89,7 +94,8 @@ class crypto_AES
 				    STRING_TYPE,
 				    ENCRYPTION_MODE,
 				    std::string,
-				    STRING_TYPE);	
+				    STRING_TYPE,
+				    PAD_TYPE);	
 };	
 		
 class crypto_DES
