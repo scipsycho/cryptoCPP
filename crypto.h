@@ -83,6 +83,9 @@ class crypto_AES
 		std::vector<BYTE> __enc_block__(std::vector<BYTE>&,
 						std::vector<std::vector<BYTE> >&);
 
+		//Decrypts 4Bytes of data with the key stored in words
+		std::vector<BYTE> __dec_block__(std::vector<BYTE>&,
+						std::vector<std::vector<BYTE> >&);
 
 		//utility function to convert a string to a vector of bytes
 		std::vector<BYTE> __BYTE_transform__(std::string,

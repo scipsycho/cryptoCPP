@@ -329,6 +329,43 @@ std::vector<BYTE> crypto_AES::__enc_block__(std::vector<BYTE> &input,
 	return output;	
 	
 }
+std::vector<BYTE> crypto_AES::__dec_block__(std::vector<BYTE> &input, 
+				std::vector<std::vector<BYTE> > &words)
+{
+	std::vector<std::vector<BYTE> > state(4,std::vector<BYTE>(4,0));
+	for(int i = 0; i<4; i++)
+	{
+		for(int j = 0; j<4; j++)
+			state[i][j] = input[i+4*j];
+	}
+
+	int Nr = words.size()/4 - 1;
+	__addRoundKey_transform__(state,words,4*Nr);
+	int round = Nr-1;
+
+	while(round >=1)
+	{
+		__shiftRows_inv_transform__(state);
+		__subBytes_transform__(state,true);
+		__addRoundKey_transform__(state,words,round*4);
+		__mixColumns_inv_transform__(state);
+		round--;
+	}
+	
+	__shiftRows_inv_transform__(state);
+	__subBytes_transform__(state,true);
+	__addRoundKey_transform__(state,words,0);
+
+	std::vector<BYTE> output(input.size());
+
+	for(int i=0; i<4; i++){
+		for(int j=0; j<4; j++)
+			output[i + 4*j] = state[i][j];
+	}
+
+	return output;	
+	
+}
 std::string crypto_AES::__hex_transform__(std::vector<BYTE> &bytes)
 {
 	std::stringstream ss;
