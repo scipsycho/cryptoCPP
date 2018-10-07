@@ -291,7 +291,20 @@ std::vector<BYTE> crypto_AES::__enc_block__(std::vector<BYTE> &input,
 	return output;	
 	
 }
-
+std::string crypto_AES::__hex_transform__(std::vector<BYTE> &bytes)
+{
+	std::stringstream ss;
+	int temp;
+	for(int b_i = 0; b_i < bytes.size(); b_i++)
+	{
+		temp = bytes[b_i];
+		ss << std::setfill('0')
+		   << std::setw(2)
+		   << std::hex
+		   << temp;
+	}
+	return ss.str();
+}
 std::vector<BYTE> crypto_AES::__BYTE_transform__(std::string str,
 						 STRING_TYPE str_type)
 {
@@ -495,12 +508,12 @@ std::string crypto_AES::encrypt(std::string mess,
 	this->m_type = mess_type;
 
 	__pad_message__(pad_type);
+	std::cout<<"padded message: "<<this->input.size()<<std::endl;
 	this->secretKey = __roundKeyGen__(key_in_bytes);
 
 	
 	std::vector<BYTE> mess_block;
 	std::vector<BYTE> enc_block;
-	std::stringstream ss;
 	int temp;
 	switch(enc_mod)
 	{
@@ -511,16 +524,7 @@ std::string crypto_AES::encrypt(std::string mess,
 					mess_block = __getNextBlock__();
 					enc_block = __enc_block__(mess_block,
 								  this->secretKey);
-					ss.str("");
-					for(int enc_i = 0; enc_i < enc_block.size(); enc_i++)
-					{
-						temp = enc_block[enc_i];
-						ss << std::setfill('0') 
-						   << std::setw(2)
-						   << std::hex
-						   << temp;				
-					}
-					this->output += ss.str();
+					this->output += __hex_transform__(enc_block);
 
 					if( this->input.size() == 0)
 						break;
@@ -531,14 +535,38 @@ std::string crypto_AES::encrypt(std::string mess,
 	
 		case CBC_1:
 			{
-				
-				
+				enc_block = __BYTE_transform__(iv,iv_type);
+				if(enc_block.size()!=16)
+				{
+					std::cerr<<"IV size not compatible!! Aborting!!"
+						 <<std::endl;
+					exit(1);
+				}	
+
+				this->output += __hex_transform__(enc_block);	
+			
+				while(1)
+				{
+					mess_block = __getNextBlock__();
+					mess_block = __xor_word__(mess_block,
+								  enc_block);
+					enc_block = __enc_block__(mess_block,
+								  this->secretKey);
+			
+					this->output += __hex_transform__(enc_block);
+					if( this->input.size() == 0 )
+						break;
+				}	
+
+				break;
 			}	
 
 		default:
 			std::cerr<<"Wrong choice input"<<std::endl;
 			exit(1);
 	}
+
+	
 	
 	return this->output;
 } 

@@ -80,6 +80,8 @@ class crypto_AES
 		std::vector<BYTE> __BYTE_transform__(std::string,
 						     STRING_TYPE);
 
+		//utility function to convert vector of bytes to hex string
+		std::string __hex_transform__(std::vector<BYTE> &);
 		
 		//function used for padding
 		void __pad_message__(PAD_TYPE pad_type);
