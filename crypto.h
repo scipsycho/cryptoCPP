@@ -44,10 +44,10 @@ class crypto_AES
 
 		//a utility functions that performs substituition on
 		//one word
-		void __subBytes_transform_word__(std::vector<BYTE>&);
+		void __subBytes_transform_word__(std::vector<BYTE>&, bool = false);
 
 		//Sub-Bytes transformation on the state
-		void __subBytes_transform__(std::vector< std::vector<BYTE> >&);
+		void __subBytes_transform__(std::vector< std::vector<BYTE> >&, bool = false);
 
 		//a utility function for XORing two words
 		std::vector<BYTE> __xor_word__(std::vector<BYTE>&,

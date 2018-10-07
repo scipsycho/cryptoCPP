@@ -100,8 +100,11 @@ crypto_AES::crypto_AES()
 {
 
 }
-void crypto_AES::__subBytes_transform_word__(std::vector< BYTE > &word)
+void crypto_AES::__subBytes_transform_word__(std::vector< BYTE > &word, bool isInv)
 {
+	int in = 0;
+	if(isInv)
+		in = 1;
 	BYTE mask = 0x0f;
 	BYTE row,col;
 	BYTE byte;
@@ -110,7 +113,7 @@ void crypto_AES::__subBytes_transform_word__(std::vector< BYTE > &word)
 		byte = word[i];
 		row = ( byte & ( mask << 4 ) ) >>4;
 		col = byte & mask;
-		word[i] = S_box[row][col];
+		word[i] = S_box[in][row][col];
 	}
 }
 
@@ -131,13 +134,13 @@ std::vector<BYTE> crypto_AES::__xor_word__(std::vector< BYTE > &word1,
 
 	return word;
 } 
-void crypto_AES::__subBytes_transform__(std::vector< std::vector< BYTE > > &state )
+void crypto_AES::__subBytes_transform__(std::vector< std::vector< BYTE > > &state, bool isInv )
 {
 	int n = state.size();
 	int m = state[0].size();
 	for(int i=0; i<n; i++)
 	{
-		__subBytes_transform_word__(state[i]);
+		__subBytes_transform_word__(state[i],isInv);
 	}
 }
 
