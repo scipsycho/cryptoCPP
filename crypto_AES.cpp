@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
-#include "crypto.h"
+#include "cryptoCPP.h"
 BYTE::BYTE()
 {
 	byte = 0;
@@ -662,7 +662,8 @@ std::string crypto_AES::decrypt(std::string mess,
 				STRING_TYPE mess_type,
 				std::string key,
 				STRING_TYPE key_type,
-				ENCRYPTION_MODE enc_mod)
+				ENCRYPTION_MODE enc_mod,
+				PAD_TYPE pad_type)
 {
 	this->output = "";
 
@@ -767,7 +768,16 @@ std::string crypto_AES::decrypt(std::string mess,
 			exit(1);
 	}
 
-	
+	if(pad_type == PKCS5)
+	{
+		int count = 0,n;
+		n = this->output.size();
+		std::stringstream ss;
+		ss << std::hex << this->output.substr(n-2);
+		ss >> count;
+
+		this->output = this->output.substr(0,n-count*2);
+	}
 	
 	return this->output;
 }

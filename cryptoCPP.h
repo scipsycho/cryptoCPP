@@ -118,7 +118,8 @@ class crypto_AES
 				    STRING_TYPE,
 				    std::string,
 				    STRING_TYPE,
-				    ENCRYPTION_MODE);	
+				    ENCRYPTION_MODE,
+				    PAD_TYPE);	
 };	
 		
 class crypto_DES
