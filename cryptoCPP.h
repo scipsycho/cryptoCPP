@@ -32,7 +32,7 @@ class BYTE
 
 class crypto_AES
 {
-	public:
+	private:
 		std::string input;
 		STRING_TYPE m_type;
 		std::string output;
@@ -40,7 +40,6 @@ class crypto_AES
 
 
 
-		crypto_AES();
 
 		//a utility functions that performs substituition on
 		//one word
@@ -102,8 +101,12 @@ class crypto_AES
 
 		//function to get the next block of message
 		std::vector<BYTE> __getNextBlock__();
-	
-		//Encrypt function
+
+    public:	
+		
+        crypto_AES();
+		
+        //Encrypt function
 		std::string encrypt(std::string,
 				    STRING_TYPE,
 				    std::string,
