@@ -1,0 +1,2 @@
+Run `make test` (without quotes)
+Then run, `./test` (without quotes)
